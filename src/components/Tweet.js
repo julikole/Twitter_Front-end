@@ -1,9 +1,12 @@
 import { Component } from "react";
+import { Link } from "react-router-dom";
+import { getFormattedTime } from "../utils/date";
+
 
 class Tweet extends Component {
   render() {
     const tweet = this.props.tweetInfo;
-    const {id, name, message, username, created_at} = tweet;
+    const { name, message, username, created_at } = tweet;
 
     const tweetItemStyles = {
       padding: "10px",
@@ -11,9 +14,15 @@ class Tweet extends Component {
       margin: 10,
     };
 
+    const userLink = (
+        <Link to={`/user/${username}`}>
+            @{username}
+        </Link>
+    )
+
     return (
-      <div key={id} style={tweetItemStyles}>
-        <p>{name} {username} {created_at}</p>
+      <div  style={tweetItemStyles}>
+        <p>{name} ({userLink}) {getFormattedTime(created_at)}</p>
         <p>{message}</p>
       </div>
     );

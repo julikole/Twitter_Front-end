@@ -1,6 +1,7 @@
 import { Component } from "react";
-import Tweet from './Tweet'
-import { getTweets } from '../services/tweets'
+import Tweet from './Tweet';
+import ErrorMessage from "./ErrorMessage";
+import { getTweets, createTweet } from '../services/tweets';
 
 class Feed extends Component {
     constructor(props) {
@@ -8,15 +9,35 @@ class Feed extends Component {
 
         this.state = {
             tweets: [],
-            isLoading: false,
-            error: null
+            isLoading: true,
+            error: null,
+            newTweetText: '',
         };
+    }
+
+    handleChangeNewTweetText(event) {
+        this.setState({
+            newTweetText: event.target.value
+        });
+    }
+
+    async handleSubmitNewTweet() {
+        const { newTweetText } = this.state;
+        
+        // POST / create new tweet through API
+        await createTweet(newTweetText);
+        
+        // Clear text area
+        this.setState({ newTweetText: '' });
+
+        // Refetch tweets
+        this.handlePopulateTweets();
     }
 
     async componentDidMount() {
         await this.handlePopulateTweets();
     }
-    
+
     async handlePopulateTweets() {
 
         this.setState({
@@ -24,13 +45,13 @@ class Feed extends Component {
             error: null,
         })
 
-        try { 
-        const tweets = await getTweets()
-    
-        this.setState({
-            tweets: tweets,
-            isLoading: false,
-        });
+        try {
+            const tweets = await getTweets()
+
+            this.setState({
+                tweets: tweets,
+                isLoading: false,
+            });
         } catch (error) {
             this.setState({
                 error: error,
@@ -40,19 +61,15 @@ class Feed extends Component {
     }
 
     render() {
-        const { tweets, error, isLoading } = this.state;
-        const allTweets = tweets.map((tweet) => {
-            return ( 
-                <Tweet tweetInfo={tweet} />
-            )
-        })
-        
+        const { tweets, error, isLoading, newTweetText } = this.state;
+
         if (error) {
-            <div>
-                <h3>Unable to fetch tweets: {error.message}</h3>
-                <button onClick={this.handlePopulateTweets.bind(this)}></button>
-                Retry
-            </div>
+            return (
+                <ErrorMessage
+                    message={error.message}
+                    onRetry={this.handlePopulateTweets.bind(this)}
+                />
+            );
         }
 
         if (isLoading) {
@@ -60,12 +77,31 @@ class Feed extends Component {
                 <div>Loading tweets...</div>
             );
         }
+
+        const allTweets = tweets.map((tweet) => {
+            return (
+                <Tweet key={tweet.id} tweetInfo={tweet} />
+            )
+        });
+
         return (
             <main>
-                <div>Feed</div>
+                <h1>Feed</h1>
                 <div>
-                    {allTweets}
+                    <label>
+                        Write a new tweet:
+                        <div>
+                            <textarea
+                                rows="3"
+                                value={newTweetText}
+                                onChange={this.handleChangeNewTweetText.bind(this)} />
+                        </div>
+                    </label>
+                    <button onClick={this.handleSubmitNewTweet.bind(this)}>
+                        Submit tweet
+                    </button>
                 </div>
+                <div>{allTweets}</div>
             </main>
 
         )
