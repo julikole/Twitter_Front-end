@@ -10,8 +10,10 @@ class Tweet extends Component {
 
     const tweetItemStyles = {
       padding: "10px",
-      border: "1px solid black",
-      margin: 10,
+      border: "0.5px solid gray",
+      borderRadius: "7px",
+      width: "75%",
+      margin: "10px auto 10px auto",
     };
 
     const userLink = (
